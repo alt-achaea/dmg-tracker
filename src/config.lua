@@ -23,4 +23,4 @@ Further reading material. e.g. a link to the Mudlet wiki, forums, Github package
 
 * https://wiki.mudlet.org/w/Manual:Best_Practices#Package_and_Module_best_practices
 * [Link 2 might be a webpage](https://example.org)]]
-created = "2025-02-21T22:48:17+03:00"
+created = "2025-02-22T23:31:59+03:00"

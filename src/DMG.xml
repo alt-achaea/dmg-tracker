@@ -92,7 +92,7 @@ dmg.curAttack.registerRecord()</script>
 			<time>00:00:00.000</time>
 			<Timer isActive="yes" isFolder="no" isTempTimer="no" isOffsetTimer="no">
 				<name>Update DMG Averages</name>
-				<script>if not dmg then return end
+				<script>if not dmg or not dmg.updateAverages then return end
 dmg.updateAverages()</script>
 				<command></command>
 				<packageName></packageName>
@@ -100,7 +100,29 @@ dmg.updateAverages()</script>
 			</Timer>
 		</TimerGroup>
 	</TimerPackage>
-	<AliasPackage />
+	<AliasPackage>
+		<AliasGroup isActive="yes" isFolder="yes">
+			<name>DMG</name>
+			<script></script>
+			<command></command>
+			<packageName></packageName>
+			<regex></regex>
+			<Alias isActive="yes" isFolder="no">
+				<name>DMG Intervals</name>
+				<script>-- Set DMG Intervals
+-- Example: dmgintervals 20 60 120 300 900
+local values = matches[2]:split(' ')
+for val,_ in pairs(values) do
+  values[val] = tonumber(values[val])
+end
+dmg.intervals = values
+dmg.changeIntervals()</script>
+				<command></command>
+				<packageName></packageName>
+				<regex>^dmgintervals ([\d ]+)$</regex>
+			</Alias>
+		</AliasGroup>
+	</AliasPackage>
 	<ActionPackage />
 	<ScriptPackage>
 		<ScriptGroup isActive="yes" isFolder="yes">
@@ -115,6 +137,7 @@ dmg.updateAverages()</script>
 
 dmg.attacks = dmg.attacks or {}
 dmg.goldPicks = dmg.goldPicks or {}
+dmg.intervals = dmg.intervals or {20, 60, 120, 300, 900}
 
 --- Setting up current attack variables
 dmg.curAttack = dmg.curAttack or {}
@@ -167,8 +190,7 @@ function dmg.reset() -- Initial parameters here
   dmg.goldPicks = {}
   dmg.averages = {}
   
-  local intervals = {20, 60, 120, 300, 900}
-  for _,interval in ipairs(intervals) do
+  for _,interval in ipairs(dmg.intervals) do
     dmg.periods[interval] = {
       firstDmg = 1, totalDmg = 0,
       firstGold = 1, totalGold = 0
@@ -180,6 +202,28 @@ function dmg.reset() -- Initial parameters here
   dmg.echo('DMG has been reset!')
 end
 if not dmg.periods then dmg.reset() end
+
+function dmg.changeIntervals()
+  dmg.periods = {}
+  dmg.averages = {}
+  for _,interval in ipairs(dmg.intervals) do
+    dmg.periods[interval] = {
+      firstDmg = 1, totalDmg = 0,
+      firstGold = 1, totalGold = 0
+    }
+    dmg.averages[interval] = {
+      dmg = 0, gold = 0
+    }
+    for _,attack in pairs(dmg.attacks) do
+      dmg.periods[interval].totalDmg = dmg.periods[interval].totalDmg + attack.damage 
+    end
+    for _,goldPick in pairs(dmg.goldPicks) do
+      dmg.periods[interval].totalGold = dmg.periods[interval].totalGold + goldPick.value 
+    end
+  end
+  dmg.updateAverages()
+  dmg.echo('DMG intervals have been changed!')
+end
 
 function dmg.updateAverages()
   local result = {}
@@ -221,6 +265,77 @@ end
 function dmg.echo(msg)
   cecho('\n&lt;brown&gt;[&lt;light_goldenrod&gt;DMG&lt;brown&gt;] &lt;white&gt;' .. msg)
 end</script>
+				<eventHandlerList />
+			</Script>
+			<Script isActive="yes" isFolder="no">
+				<name>DMG Window</name>
+				<packageName></packageName>
+				<script>dmg = dmg or {}
+
+dmg.UI = dmg.UI or {}
+
+dmg.UI.Window = dmg.UI.Window or Adjustable.Container:new({
+  name = "DMG",
+  x=0, y="-35%",
+  width = 100, height= 200,
+})
+
+dmg.UI.Label = Geyser.Label:new({
+  name = "DMG Label",
+  x = "0%", y = "0%",
+  width = "100%", height = "100%",
+}, dmg.UI.Window)
+
+dmg.UI.Label:setStyleSheet([[
+  background-color: black;
+  border-width: 3px;
+  border-style: solid;
+  border-color: DimGrey;
+  border-radius: 10px;
+]])
+
+dmg.UI.Console = Geyser.MiniConsole:new({
+  name = 'DMG',
+  color = 'black',
+  x = 4, y = 35,
+  width = '100%-10', height = '100%-40',
+  fontSize = 14,
+  font = "Bitstream Vera Sans Mono",
+  autoWrap = true
+}, dmg.UI.Label)
+
+dmg.UI.Title = Geyser.Label:new({
+  name = "DMG Title",
+  x = "0%", y = "0%",
+  width = "100%", height = 25,
+  fgColor = "Gold",
+  message = [[&lt;center&gt;DMG&lt;/center&gt;]]
+}, dmg.UI.Window)
+
+dmg.UI.Title:setStyleSheet([[
+  background-color: black;
+  border-width: 3px;
+  border-style: solid;
+  border-color: DimGrey;
+  border-radius: 10px;
+]])
+
+function dmg.UI.Update()
+  local w = dmg.UI.Console
+  
+  w:clear()
+  for _,interval in ipairs(dmg.intervals) do
+    w:cecho('&lt;white&gt;' .. (' '):rep(4 - #tostring(interval)) .. interval .. 's: ')
+    local gold = string.format('%.1f', dmg.averages[interval].gold)
+    local damage = string.format('%.1f', dmg.averages[interval].dmg)
+    w:cecho('&lt;gold&gt;g&lt;yellow&gt;' .. gold .. (' '):rep(6 - #gold) ..  ' ')
+    w:cecho('&lt;brown&gt;d&lt;NavajoWhite&gt;' .. damage .. ' ')
+    w:cecho('\n')
+  end
+
+end
+
+registerAnonymousEventHandler('DMG Averages Updated', 'dmg.UI.Update')</script>
 				<eventHandlerList />
 			</Script>
 		</ScriptGroup>
@@ -277,7 +392,7 @@ end</script>
 		<Variable>
 			<name>target</name>
 			<keyType>4</keyType>
-			<value>Xulu</value>
+			<value>Xabat</value>
 			<valueType>4</valueType>
 		</Variable>
 	</VariablePackage>
