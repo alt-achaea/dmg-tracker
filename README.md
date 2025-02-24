@@ -12,6 +12,11 @@ things.
 
  * 1.001 - initial commit!
 
+## To use
+
+ * Grab the package from pkg/DMG.mpackage
+ * Install it as any other Mudlet package
+
 ## Thanks to
 
  * Ulvin @ Achaea - for the code!
