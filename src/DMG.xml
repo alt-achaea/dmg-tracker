@@ -81,6 +81,28 @@ dmg.curAttack.registerRecord()</script>
 					<integer>1</integer>
 				</regexCodePropertyList>
 			</Trigger>
+			<Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
+				<name>Attractor gold</name>
+				<script>if dmg.currentHeldGold ~= gmcp.Char.Status.gold then
+  dmg.registerGoldPick(gmcp.Char.Status.gold - dmg.currentHeldGold)
+end</script>
+				<triggerType>0</triggerType>
+				<conditonLineDelta>0</conditonLineDelta>
+				<mStayOpen>0</mStayOpen>
+				<mCommand></mCommand>
+				<packageName></packageName>
+				<mFgColor>#ff0000</mFgColor>
+				<mBgColor>#ffff00</mBgColor>
+				<mSoundFile></mSoundFile>
+				<colorTriggerFgColor>#000000</colorTriggerFgColor>
+				<colorTriggerBgColor>#000000</colorTriggerBgColor>
+				<regexCodeList>
+					<string>^.+ from the corpse, flying into your hands before they can reach the ground\.$</string>
+				</regexCodeList>
+				<regexCodePropertyList>
+					<integer>1</integer>
+				</regexCodePropertyList>
+			</Trigger>
 		</TriggerGroup>
 	</TriggerPackage>
 	<TimerPackage>
@@ -92,7 +114,7 @@ dmg.curAttack.registerRecord()</script>
 			<time>00:00:00.000</time>
 			<Timer isActive="yes" isFolder="no" isTempTimer="no" isOffsetTimer="no">
 				<name>Update DMG Averages</name>
-				<script>if not dmg or not dmg.updateAverages then return end
+				<script>if not dmg then return end
 dmg.updateAverages()</script>
 				<command></command>
 				<packageName></packageName>
@@ -120,6 +142,13 @@ dmg.changeIntervals()</script>
 				<command></command>
 				<packageName></packageName>
 				<regex>^dmgintervals ([\d ]+)$</regex>
+			</Alias>
+			<Alias isActive="yes" isFolder="no">
+				<name>DMG Reset</name>
+				<script>dmg.reset()</script>
+				<command></command>
+				<packageName></packageName>
+				<regex>^dmgreset$</regex>
 			</Alias>
 		</AliasGroup>
 	</AliasPackage>
@@ -338,6 +367,20 @@ end
 registerAnonymousEventHandler('DMG Averages Updated', 'dmg.UI.Update')</script>
 				<eventHandlerList />
 			</Script>
+			<Script isActive="yes" isFolder="no">
+				<name>DMG Attractor Logic</name>
+				<packageName></packageName>
+				<script>dmg.currentHeldGold = dmg.currentHeldGold or 0
+
+function dmg.maintainGold()
+  -- Keep info for current gold up to date,
+  -- but after the triggers had a chance to run and notice the change
+  tempTimer(0, [[dmg.currentHeldGold = gmcp.Char.Status.gold]])
+end
+
+registerAnonymousEventHandler('gmcp.Char.Status', 'dmg.maintainGold')</script>
+				<eventHandlerList />
+			</Script>
 		</ScriptGroup>
 	</ScriptPackage>
 	<KeyPackage />
@@ -392,7 +435,7 @@ registerAnonymousEventHandler('DMG Averages Updated', 'dmg.UI.Update')</script>
 		<Variable>
 			<name>target</name>
 			<keyType>4</keyType>
-			<value>Xabat</value>
+			<value>Fish</value>
 			<valueType>4</valueType>
 		</Variable>
 	</VariablePackage>
