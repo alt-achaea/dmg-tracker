@@ -1,0 +1,284 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE MudletPackage>
+<MudletPackage version="1.001">
+	<TriggerPackage>
+		<TriggerGroup isActive="yes" isFolder="yes" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
+			<name>DMG</name>
+			<script></script>
+			<triggerType>0</triggerType>
+			<conditonLineDelta>0</conditonLineDelta>
+			<mStayOpen>0</mStayOpen>
+			<mCommand></mCommand>
+			<packageName></packageName>
+			<mFgColor>#ff0000</mFgColor>
+			<mBgColor>#ffff00</mBgColor>
+			<mSoundFile></mSoundFile>
+			<colorTriggerFgColor>#000000</colorTriggerFgColor>
+			<colorTriggerBgColor>#000000</colorTriggerBgColor>
+			<regexCodeList />
+			<regexCodePropertyList />
+			<Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
+				<name>Pick up Gold</name>
+				<script>dmg.registerGoldPick(tonumber(matches[2]))</script>
+				<triggerType>0</triggerType>
+				<conditonLineDelta>0</conditonLineDelta>
+				<mStayOpen>0</mStayOpen>
+				<mCommand></mCommand>
+				<packageName></packageName>
+				<mFgColor>#ff0000</mFgColor>
+				<mBgColor>#ffff00</mBgColor>
+				<mSoundFile></mSoundFile>
+				<colorTriggerFgColor>#000000</colorTriggerFgColor>
+				<colorTriggerBgColor>#000000</colorTriggerBgColor>
+				<regexCodeList>
+					<string>^You (?:pick|scoop) up (\d+) gold sovereigns\.$</string>
+				</regexCodeList>
+				<regexCodePropertyList>
+					<integer>1</integer>
+				</regexCodePropertyList>
+			</Trigger>
+			<Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
+				<name>Pick Up A Single Sovereign</name>
+				<script>dmg.registerGoldPick(1)</script>
+				<triggerType>0</triggerType>
+				<conditonLineDelta>0</conditonLineDelta>
+				<mStayOpen>0</mStayOpen>
+				<mCommand></mCommand>
+				<packageName></packageName>
+				<mFgColor>#ff0000</mFgColor>
+				<mBgColor>#ffff00</mBgColor>
+				<mSoundFile></mSoundFile>
+				<colorTriggerFgColor>#000000</colorTriggerFgColor>
+				<colorTriggerBgColor>#000000</colorTriggerBgColor>
+				<regexCodeList>
+					<string>^You (pick|scoop) up a single gold sovereign\.$</string>
+				</regexCodeList>
+				<regexCodePropertyList>
+					<integer>1</integer>
+				</regexCodePropertyList>
+			</Trigger>
+			<Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="yes" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
+				<name>Damage dealt</name>
+				<script>dmg.curAttack.recordDamage(multimatches[2][2], multimatches[2][3])
+
+dmg.curAttack.registerRecord()</script>
+				<triggerType>0</triggerType>
+				<conditonLineDelta>0</conditonLineDelta>
+				<mStayOpen>0</mStayOpen>
+				<mCommand></mCommand>
+				<packageName></packageName>
+				<mFgColor>#ff0000</mFgColor>
+				<mBgColor>#ffff00</mBgColor>
+				<mSoundFile></mSoundFile>
+				<colorTriggerFgColor>#000000</colorTriggerFgColor>
+				<colorTriggerBgColor>#000000</colorTriggerBgColor>
+				<regexCodeList>
+					<string>Damage dealt:</string>
+					<string>^Damage dealt\: (\d+) \((.+)\)\.$</string>
+				</regexCodeList>
+				<regexCodePropertyList>
+					<integer>2</integer>
+					<integer>1</integer>
+				</regexCodePropertyList>
+			</Trigger>
+		</TriggerGroup>
+	</TriggerPackage>
+	<TimerPackage>
+		<TimerGroup isActive="yes" isFolder="yes" isTempTimer="no" isOffsetTimer="no">
+			<name>DMG</name>
+			<script></script>
+			<command></command>
+			<packageName></packageName>
+			<time>00:00:00.000</time>
+			<Timer isActive="yes" isFolder="no" isTempTimer="no" isOffsetTimer="no">
+				<name>Update DMG Averages</name>
+				<script>if not dmg then return end
+dmg.updateAverages()</script>
+				<command></command>
+				<packageName></packageName>
+				<time>00:00:01.000</time>
+			</Timer>
+		</TimerGroup>
+	</TimerPackage>
+	<AliasPackage />
+	<ActionPackage />
+	<ScriptPackage>
+		<ScriptGroup isActive="yes" isFolder="yes">
+			<name>DMG</name>
+			<packageName></packageName>
+			<script></script>
+			<eventHandlerList />
+			<Script isActive="yes" isFolder="no">
+				<name>DMG</name>
+				<packageName></packageName>
+				<script>dmg = dmg or {}
+
+dmg.attacks = dmg.attacks or {}
+dmg.goldPicks = dmg.goldPicks or {}
+
+--- Setting up current attack variables
+dmg.curAttack = dmg.curAttack or {}
+dmg.curAttack.record = dmg.curAttack.record or {}
+
+function dmg.curAttack.clearRecord()
+  dmg.curAttack.record = {}
+end
+
+function dmg.curAttack.recordDenizen(denizen)
+  dmg.curAttack.record.denizen = denizen
+end
+
+function dmg.curAttack.recordDamage(value, type)
+  dmg.curAttack.record.damage = value
+  dmg.curAttack.record.damageType = type
+end
+
+function dmg.curAttack.recordCrit(multiplier)
+  dmg.curAttack.record.critMultiplier = multiplier
+end
+
+function dmg.curAttack.recordMayaStatus(charge, discharge)
+  dmg.curAttack.record.mayaCharged = charge
+  dmg.curAttack.record.mayaDischarged = discharge
+end
+
+function dmg.curAttack.registerRecord()
+  dmg.curAttack.record.time = getEpoch()
+  dmg.attacks[#dmg.attacks + 1] = dmg.curAttack.record
+  for interval,_ in pairs(dmg.periods) do
+    dmg.periods[interval].totalDmg = dmg.periods[interval].totalDmg + dmg.curAttack.record.damage
+  end
+  dmg.curAttack.record = {}
+  dmg.updateAverages()
+end
+
+
+function dmg.registerGoldPick(value)
+  dmg.goldPicks[#dmg.goldPicks + 1] = {time = getEpoch(), value = value}
+  for interval,_ in pairs(dmg.periods) do
+    dmg.periods[interval].totalGold = dmg.periods[interval].totalGold + value
+  end
+  dmg.updateAverages()
+end
+
+function dmg.reset() -- Initial parameters here
+  dmg.periods = {}
+  dmg.attacks = {}
+  dmg.goldPicks = {}
+  dmg.averages = {}
+  
+  local intervals = {20, 60, 120, 300, 900}
+  for _,interval in ipairs(intervals) do
+    dmg.periods[interval] = {
+      firstDmg = 1, totalDmg = 0,
+      firstGold = 1, totalGold = 0
+    }
+    dmg.averages[interval] = {
+      dmg = 0, gold = 0
+    }
+  end
+  dmg.echo('DMG has been reset!')
+end
+if not dmg.periods then dmg.reset() end
+
+function dmg.updateAverages()
+  local result = {}
+  local curTime = getEpoch()
+  -- # operator is O(log N), precompute
+  local attacksLength = #dmg.attacks
+  local goldPicksLength = #dmg.goldPicks
+  
+  for interval,_ in pairs(dmg.periods) do 
+    -- update firstDmg, firstGold
+    while
+      dmg.periods[interval].firstDmg &lt;= attacksLength and
+      dmg.attacks[dmg.periods[interval].firstDmg].time + interval &lt; curTime
+    do
+      dmg.periods[interval].totalDmg = dmg.periods[interval].totalDmg - dmg.attacks[dmg.periods[interval].firstDmg].damage
+      dmg.periods[interval].firstDmg = dmg.periods[interval].firstDmg + 1
+    end
+    while
+      dmg.periods[interval].firstGold &lt;= goldPicksLength and
+      dmg.goldPicks[dmg.periods[interval].firstGold].time + interval &lt; curTime
+    do
+      dmg.periods[interval].totalGold = dmg.periods[interval].totalGold - dmg.goldPicks[dmg.periods[interval].firstGold].value
+      dmg.periods[interval].firstGold = dmg.periods[interval].firstGold + 1
+    end
+    
+    local attackNum = attacksLength - dmg.periods[interval].firstDmg + 1
+    local goldPickNum = goldPicksLength - dmg.periods[interval].firstGold + 1
+    
+    result[interval] = {}
+    result[interval].dmg = (attackNum &lt; 1 and 0 or dmg.periods[interval].totalDmg / interval)
+    result[interval].gold = (goldPickNum &lt; 1 and 0 or dmg.periods[interval].totalGold / interval)
+    
+  end
+  
+  dmg.averages = result
+  raiseEvent('DMG Averages Updated')
+end
+
+function dmg.echo(msg)
+  cecho('\n&lt;brown&gt;[&lt;light_goldenrod&gt;DMG&lt;brown&gt;] &lt;white&gt;' .. msg)
+end</script>
+				<eventHandlerList />
+			</Script>
+		</ScriptGroup>
+	</ScriptPackage>
+	<KeyPackage />
+	<VariablePackage>
+		<HiddenVariables>
+			<name>mmp_grabenvid</name>
+			<name>speedWalkWatch</name>
+			<name>HSVtoRGB</name>
+			<name>register_starmourn_envdata</name>
+			<name>mmp_checkupdatestart</name>
+			<name>mmp_regenerate_areas</name>
+			<name>mmp_load_options</name>
+			<name>mmp_center_roominfo</name>
+			<name>achaea_gaia_whirlpool_reset</name>
+			<name>register_imperians_envdata</name>
+			<name>cecho</name>
+			<name>register_lithmerias_envdata</name>
+			<name>mmp_downloaded_file</name>
+			<name>mmp_save_options</name>
+			<name>mmapper_went_outside</name>
+			<name>colorGrad</name>
+			<name>createOption</name>
+			<name>register_asterias_envdata</name>
+			<name>speedWalkDir</name>
+			<name>asteria_can_move</name>
+			<name>initWordtables</name>
+			<name>asteria_stop_speedwalk_for_wrong_dir</name>
+			<name>doSpeedWalk</name>
+			<name>roomIDExact</name>
+			<name>speedWalkCounter</name>
+			<name>stickmud_stop_speedwalk_for_wrong_dir</name>
+			<name>RGBtoHSV</name>
+			<name>speedwalking</name>
+			<name>createOptionsTable</name>
+			<name>eriLink</name>
+			<name>speedWalkPath</name>
+			<name>LDM_Used_LDECK_LIST</name>
+			<name>mmp_see_dl_errors</name>
+			<name>mmp_relock_areas</name>
+			<name>deleteOldProfiles</name>
+			<name>register_dragonswords_envdata</name>
+			<name>mmp_load_locks</name>
+			<name>mmp_mapping_newroom</name>
+			<name>register_achaeas_envdata</name>
+			<name>_sep</name>
+			<name>dragonswords_stop_speedwalk_for_wrong_dir</name>
+			<name>register_lusternias_envdata</name>
+			<name>register_aetolias_envdata</name>
+			<name>echoclicky</name>
+			<name>eriLink2</name>
+		</HiddenVariables>
+		<Variable>
+			<name>target</name>
+			<keyType>4</keyType>
+			<value>Xulu</value>
+			<valueType>4</valueType>
+		</Variable>
+	</VariablePackage>
+</MudletPackage>
